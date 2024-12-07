@@ -208,97 +208,112 @@
     <audio id="rain-sound" src="rain.mp3" loop></audio>
     <audio id="sun-sound" src="birds.mp3" loop></audio>
 
-    <script>
-        const body = document.body;
-        const landscape = document.getElementById("landscape");
-        const weatherIcon = document.getElementById("weather-icon");
-        const slider = document.getElementById("temperature-slider");
-        const snowSound = document.getElementById("snow-sound");
-        const rainSound = document.getElementById("rain-sound");
-        const sunSound = document.getElementById("sun-sound");
-        const forecastBar = document.getElementById("forecast-bar");
+   <script>
+    const body = document.body;
+    const landscape = document.getElementById("landscape");
+    const weatherIcon = document.getElementById("weather-icon");
+    const slider = document.getElementById("temperature-slider");
+    const snowSound = document.getElementById("snow-sound");
+    const rainSound = document.getElementById("rain-sound");
+    const sunSound = document.getElementById("sun-sound");
+    const forecastBar = document.getElementById("forecast-bar");
 
-        const weatherConditions = {
-            snow: { icon: "snowy-bg.png", bg: "#87CEEB", effect: createSnowflakes, sound: snowSound },
-            rain: { icon: "cold-bg.png", bg: "#475973", effect: createRaindrops, sound: rainSound },
-            sun: { icon: "default-bg.png", bg: "#FFA500", effect: clearEffects, sound: sunSound },
-        };
+    let currentWeather = null; // To track the current weather type
 
-        slider.addEventListener("input", () => {
-            const temp = slider.value;
-            if (temp < 0) {
-                applyWeather("snow");
-            } else if (temp > 25) {
-                applyWeather("sun");
-            } else {
-                applyWeather("rain");
-            }
+    const weatherConditions = {
+        snow: { icon: "snowy-bg.png", bg: "#87CEEB", effect: createSnowflakes, sound: snowSound },
+        rain: { icon: "cold-bg.png", bg: "#475973", effect: createRaindrops, sound: rainSound },
+        sun: { icon: "default-bg.png", bg: "#FFA500", effect: clearEffects, sound: sunSound },
+    };
+
+    slider.addEventListener("input", () => {
+        const temp = slider.value;
+        if (temp < 0) {
+            if (currentWeather !== "snow") applyWeather("snow"); // Change only if different
+        } else if (temp > 25) {
+            if (currentWeather !== "sun") applyWeather("sun");
+        } else {
+            if (currentWeather !== "rain") applyWeather("rain");
+        }
+    });
+
+    document.getElementById("snow-btn").addEventListener("click", () => {
+        if (currentWeather !== "snow") applyWeather("snow");
+    });
+
+    document.getElementById("rain-btn").addEventListener("click", () => {
+        if (currentWeather !== "rain") applyWeather("rain");
+    });
+
+    document.getElementById("sun-btn").addEventListener("click", () => {
+        if (currentWeather !== "sun") applyWeather("sun");
+    });
+
+    function applyWeather(type) {
+        if (currentWeather === type) return; // Skip if already applied
+
+        const { icon, bg, effect, sound } = weatherConditions[type];
+        currentWeather = type; // Update the current weather type
+        weatherIcon.src = icon;
+        body.style.background = bg;
+        effect();
+        playSound(sound);
+    }
+
+    function clearEffects() {
+        document.querySelectorAll(".snowflake, .raindrop").forEach((el) => el.remove());
+    }
+
+    function createSnowflakes() {
+        clearEffects();
+        for (let i = 0; i < 50; i++) {
+            const snowflake = document.createElement("div");
+            snowflake.className = "snowflake";
+            snowflake.style.left = `${Math.random() * 100}vw`;
+            snowflake.style.animationDuration = `${Math.random() * 5 + 5}s`;
+            snowflake.style.animationDelay = `${Math.random() * 5}s`;
+            body.appendChild(snowflake);
+        }
+    }
+
+    function createRaindrops() {
+        clearEffects();
+        for (let i = 0; i < 100; i++) {
+            const raindrop = document.createElement("div");
+            raindrop.className = "raindrop";
+            raindrop.style.left = `${Math.random() * 100}vw`;
+            raindrop.style.animationDuration = `${Math.random() * 1 + 1}s`;
+            raindrop.style.animationDelay = `${Math.random() * 1}s`;
+            body.appendChild(raindrop);
+        }
+    }
+
+    function playSound(sound) {
+        // Pause all sounds before playing the selected one
+        [snowSound, rainSound, sunSound].forEach((s) => {
+            s.pause();
+            s.currentTime = 0;
         });
+        sound.play();
+    }
 
-        document.getElementById("snow-btn").addEventListener("click", () => applyWeather("snow"));
-        document.getElementById("rain-btn").addEventListener("click", () => applyWeather("rain"));
-        document.getElementById("sun-btn").addEventListener("click", () => applyWeather("sun"));
+    // Forecast Bar Logic
+    function updateForecast() {
+        const forecastData = [
+            { condition: "Snow", temp: -5 },
+            { condition: "Rain", temp: 10 },
+            { condition: "Sun", temp: 30 },
+            { condition: "Rain", temp: 15 },
+            { condition: "Snow", temp: -2 },
+        ];
 
-        function applyWeather(type) {
-            const { icon, bg, effect, sound } = weatherConditions[type];
-            weatherIcon.src = icon;
-            body.style.background = bg;
-            effect();
-            playSound(sound);
-        }
+        forecastBar.innerHTML = forecastData
+            .map(f => `<span class="forecast-item">🌧️ ${f.condition}: ${f.temp}°C</span>`)
+            .join("");
+    }
 
-        function clearEffects() {
-            document.querySelectorAll(".snowflake, .raindrop").forEach((el) => el.remove());
-        }
+    updateForecast();
+</script>
 
-        function createSnowflakes() {
-            clearEffects();
-            for (let i = 0; i < 50; i++) {
-                const snowflake = document.createElement("div");
-                snowflake.className = "snowflake";
-                snowflake.style.left = `${Math.random() * 100}vw`;
-                snowflake.style.animationDuration = `${Math.random() * 5 + 5}s`;
-                snowflake.style.animationDelay = `${Math.random() * 5}s`;
-                body.appendChild(snowflake);
-            }
-        }
-
-        function createRaindrops() {
-            clearEffects();
-            for (let i = 0; i < 100; i++) {
-                const raindrop = document.createElement("div");
-                raindrop.className = "raindrop";
-                raindrop.style.left = `${Math.random() * 100}vw`;
-                raindrop.style.animationDuration = `${Math.random() * 1 + 1}s`;
-                raindrop.style.animationDelay = `${Math.random() * 1}s`;
-                body.appendChild(raindrop);
-            }
-        }
-
-        function playSound(sound) {
-            snowSound.pause();
-            rainSound.pause();
-            sunSound.pause();
-            sound.currentTime = 0;
-            sound.play();
-        }
-
-        // Forecast Bar Logic
-        function updateForecast() {
-            const forecastData = [
-                { condition: "Snow", temp: -5 },
-                { condition: "Rain", temp: 10 },
-                { condition: "Sun", temp: 30 },
-                { condition: "Rain", temp: 15 },
-                { condition: "Snow", temp: -2 },
-            ];
-
-            forecastBar.innerHTML = forecastData
-                .map(f => `<span class="forecast-item">🌧️ ${f.condition}: ${f.temp}°C</span>`)
-                .join("");
-        }
-
-        updateForecast();
-    </script>
 </body>
 </html>
